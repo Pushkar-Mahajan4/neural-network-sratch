@@ -25,6 +25,7 @@ The format:
 | 8 - 11         | Number of rows (28)            |
 | 12 - 15        | Number of columns (28)         |
 | 16 - ...       | Pixel values (0-255)           |
+
 Each pixel is stored in row-major order, meaning the first 28 pixels belong to row 1, the next 28 belong to row 2, and so on.
 
 #### Labels File Structure (IDX1)
