@@ -48,7 +48,11 @@ class Main {
         String testImagesLocation = "dataset/t10k-images.idx3-ubyte";
         String testLabelsLocation = "dataset/t10k-labels.idx1-ubyte";
 
+        /* Load the dataset */
         List<Byte> trainImages = loadDataset(trainImagesLocation);
+        List<Byte> trainLabels = loadDataset(trainLabelsLocation);
+        List<Byte> testImages = loadDataset(testImagesLocation);
+        List<Byte> testLabels = loadDataset(testLabelsLocation);
 
     }
 }
