@@ -53,7 +53,6 @@ class Main {
         if (trainImages == null || trainLabels == null || testImages == null || testLabels == null) {
             System.out.println("Problem occurred during loading of datasets");
         }
-g
         int numberOfTrainImages = Util.getIntFromBytes(trainImages.subList(4, 8));
 
         // Verify that rows & column are 28
