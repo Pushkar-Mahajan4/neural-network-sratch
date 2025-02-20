@@ -75,16 +75,23 @@ class Main {
 //        displayImage(eachImage.getFirst());
 //        eachImage.add(Util.getImagePixels(trainImages, 16));
 
+        /* Normalizing pixel values to 0 - 1, check docs to see why float */
+        List<float[][]> normalizedPixels = NeuralNWUtils.normalizePixels(eachImage);
 
 
 
     }
 
     public static void displayImage(int[][] input) {
+        /* Java's BufferedImage, RGB values are stored as a single 32-bit integer
+        * Bits 16-23 represent red (R)
+        * Bits 8-15 represent green (G)
+        * Bits 0-7 represent blue (B) */
         BufferedImage image = new BufferedImage(28, 28, BufferedImage.TYPE_BYTE_GRAY);
         for(int y = 0; y < 28; y++) {
             for(int x = 0; x < 28; x++) {
                 int pixelValue = input[y][x];
+                // The bit shifting operation is constructing an RGB integer
                 int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue;
                 image.setRGB(x, y, rgb);
             }
