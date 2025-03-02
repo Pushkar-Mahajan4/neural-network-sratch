@@ -48,36 +48,26 @@ class Main {
 
         /* Load the dataset */
         List<Byte> trainImages = loadDataset(trainImagesLocation);
-        System.out.println("trainImages size : " +trainImages.size());
-
         List<Byte> trainLabels = loadDataset(trainLabelsLocation);
         List<Byte> testImages = loadDataset(testImagesLocation);
         List<Byte> testLabels = loadDataset(testLabelsLocation);
-
-        if (trainImages == null || trainLabels == null || testImages == null || testLabels == null) {
-            System.out.println("Problem occurred during loading of datasets");
-        }
-
-        // Verify 60000 train images
-        int numberOfTrainImages = Util.getIntFromBytes(trainImages.subList(4, 8));
-        Util.assertNumberOfTrainImages(numberOfTrainImages);
-
-        // Verify that rows & column are 28
-        int numberOfRows = Util.getIntFromBytes(trainImages.subList(8, 12));
-        int numberOfColumns = Util.getIntFromBytes(trainImages.subList(12, 16));
-        Util.assertRowsAndColumns(numberOfRows, numberOfColumns);
-
+        AssertionUtils.validateTrainImages(trainImages);
 //        /* Load each image */
         List<int[][]> eachImage = Util.getEachImage(trainImages);
+        /* Uncomment to view the first image */
+//        displayImage(eachImage.get(90));
 
         /* Load each label */
-//        List<int[]> eachLabel = Util.getEachLabel(trainLabels);
+        List<Integer> eachLabel = Util.extractLabels(trainLabels, 8);
+        AssertionUtils.validateTrainLabels(trainLabels);
+
+        /* Uncomment to go through every label */
+//        for(Integer i : eachLabel) {
+//            System.out.println("Label : " + i);
+//        }
 
         /* Normalizing pixel values to 0 - 1, check docs to see why float */
         List<float[][]> normalizedPixels = NeuralNWUtils.normalizePixels(eachImage);
-
-        /* Uncomment to view the first image */
-//        displayImage(eachImage.get(90));
 
         /* TODO : One hot encode labels
         * TODO : Initialize weights using min bias

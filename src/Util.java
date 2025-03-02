@@ -29,16 +29,12 @@ public class Util {
         return result;
     }
 
-    public static int[] extractLabels(List<Byte> input, int offset) {
-        int[] result = new int[28];
-//        for(int i = 0; i < 28; i++) {
-//            for(int j = 0; j < 28; j++) {
-//                result[i][j] = input.get(offset) & 0xFF;
-//                offset++;
-//            }
-//        }
-
-        return result;
+    public static List<Integer> extractLabels(List<Byte> input, int offset) {
+        List<Integer> labelsList = new ArrayList<>();
+        for(int i = offset; i < input.size(); i++) {
+            labelsList.add(input.get(i) & 0xFF);
+        }
+        return labelsList;
     }
 
     public static List<int[][]> getEachImage(List<Byte> input) {
@@ -48,18 +44,6 @@ public class Util {
             // 28 x 28 = 784 pixels, imageIndex to keep track of number of images
             result.add(extractImagePixels(input, imageStartIndex));
             imageStartIndex += 784;
-        }
-
-        return result;
-    }
-
-    public static List<int[]> getEachLabel(List<Byte> input) {
-        List<int[]> result = new ArrayList<>();
-        int labelStartIndex = 8;
-        while(labelStartIndex < input.size()) {
-//            result.add(extractImagePixels(input, labelStartIndex));
-            // 28 x 28 = 784 pixels + 1 to start with first pixel of next image
-            labelStartIndex++;
         }
 
         return result;
