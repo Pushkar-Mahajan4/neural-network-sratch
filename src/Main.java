@@ -74,11 +74,15 @@ class Main {
 //        List<int[]> eachLabel = Util.getEachLabel(trainLabels);
 
         /* Normalizing pixel values to 0 - 1, check docs to see why float */
-//        List<float[][]> normalizedPixels = NeuralNWUtils.normalizePixels(eachImage);
+        List<float[][]> normalizedPixels = NeuralNWUtils.normalizePixels(eachImage);
 
         /* Uncomment to view the first image */
-        // 12 -> 3, 8 -> 1
-        displayImage(eachImage.get(90));
+//        displayImage(eachImage.get(90));
+
+        /* TODO : One hot encode labels
+        * TODO : Initialize weights using min bias
+        * TODO : Setup Activation function
+        * TODO : Calculate loss */
 
     }
 
