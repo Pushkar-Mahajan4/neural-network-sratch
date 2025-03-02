@@ -49,4 +49,21 @@ public class Util {
         return result;
     }
 
+    public static List<int[]> encodeLabels(List<Integer> labelData) {
+        /* One hot encode label data for Softmax activation compatibility
+        *  In neural networks, we often use a softmax function in the last layer for classification, which outputs a probability distribution.
+        *  The one-hot encoding helps compare the model's predicted probabilities with the true class in a clear way */
+        List<int[]> resultEncoding = new ArrayList<>();
+        for(Integer label : labelData) {
+            // To hold numbers 0 - 9
+            // Label `3` → One-hot encoded as `[0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+            int[] oneHotArray = new int[10];
+            oneHotArray[label] = 1;
+            resultEncoding.add(oneHotArray);
+
+        }
+
+        return resultEncoding;
+    }
+
 }

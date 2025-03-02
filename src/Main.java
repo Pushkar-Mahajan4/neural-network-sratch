@@ -54,11 +54,12 @@ class Main {
         AssertionUtils.validateTrainImages(trainImages);
 //        /* Load each image */
         List<int[][]> eachImage = Util.getEachImage(trainImages);
+
         /* Uncomment to view the first image */
 //        displayImage(eachImage.get(90));
 
         /* Load each label */
-        List<Integer> eachLabel = Util.extractLabels(trainLabels, 8);
+        List<Integer> extractedLabels = Util.extractLabels(trainLabels, 8);
         AssertionUtils.validateTrainLabels(trainLabels);
 
         /* Uncomment to go through every label */
@@ -69,8 +70,10 @@ class Main {
         /* Normalizing pixel values to 0 - 1, check docs to see why float */
         List<float[][]> normalizedPixels = NeuralNWUtils.normalizePixels(eachImage);
 
-        /* TODO : One hot encode labels
-        * TODO : Initialize weights using min bias
+        /* One hot encode training labels */
+        List<int[]> encodedTrainLabels = Util.encodeLabels(extractedLabels);
+
+        /* TODO : Initialize weights using min bias
         * TODO : Setup Activation function
         * TODO : Calculate loss */
 
