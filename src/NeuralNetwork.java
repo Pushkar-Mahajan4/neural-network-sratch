@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class NeuralNetwork {
 
@@ -15,6 +16,8 @@ public class NeuralNetwork {
             it passes through weights and biases before reaching the activation function. The flow looks like this:
         */
         List<float[]> flattenedImages = flattenImages(trainImages);
+        float[][] weightsOne = initializeWeightsOne();
+        float[] biasOne = new float[128];
 
     }
 
@@ -41,4 +44,21 @@ public class NeuralNetwork {
 
         return resultImages;
     }
+
+    public float[][] initializeWeightsOne() {
+        /* Weights Dimensions : Size of previous layer x current layer
+        *  Since these weights sit between input layer(784 pixels) and hidden layer(128) */
+        float[][] weightsOne = new float[784][128];
+        float stdDev = (float) Math.sqrt(2.0 / 784); // He  initialization suitable for ReLu
+        Random random = new Random();
+        for(int i = 0; i < 784; i++) {
+            for(int j = 0; j < 128; j++) {
+                weightsOne[i][j] = (float) (random.nextGaussian() * stdDev);
+            }
+        }
+
+        return weightsOne;
+
+    }
+
 }
