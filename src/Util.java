@@ -13,7 +13,11 @@ public class Util {
         assert rows == columns && rows == 28;
     }
 
-    public static int[][] getImagePixels(List<Byte> input, int offset) {
+    public static void assertNumberOfTrainImages(int imageCount) throws AssertionError {
+        assert imageCount == 60000;
+    }
+
+    public static int[][] extractImagePixels(List<Byte> input, int offset) {
         int[][] result = new int[28][28];
         for(int i = 0; i < 28; i++) {
             for(int j = 0; j < 28; j++) {
@@ -25,13 +29,37 @@ public class Util {
         return result;
     }
 
+    public static int[] extractLabels(List<Byte> input, int offset) {
+        int[] result = new int[28];
+//        for(int i = 0; i < 28; i++) {
+//            for(int j = 0; j < 28; j++) {
+//                result[i][j] = input.get(offset) & 0xFF;
+//                offset++;
+//            }
+//        }
+
+        return result;
+    }
+
     public static List<int[][]> getEachImage(List<Byte> input) {
         List<int[][]> result = new ArrayList<>();
         int imageStartIndex = 16;
-        while(imageStartIndex < input.size()) {
-            result.add(getImagePixels(input, imageStartIndex));
+        while(imageStartIndex + 784 <= input.size()) {
+            // 28 x 28 = 784 pixels, imageIndex to keep track of number of images
+            result.add(extractImagePixels(input, imageStartIndex));
+            imageStartIndex += 784;
+        }
+
+        return result;
+    }
+
+    public static List<int[]> getEachLabel(List<Byte> input) {
+        List<int[]> result = new ArrayList<>();
+        int labelStartIndex = 8;
+        while(labelStartIndex < input.size()) {
+//            result.add(extractImagePixels(input, labelStartIndex));
             // 28 x 28 = 784 pixels + 1 to start with first pixel of next image
-            imageStartIndex += 785;
+            labelStartIndex++;
         }
 
         return result;
