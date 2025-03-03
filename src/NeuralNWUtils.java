@@ -36,4 +36,20 @@ public class NeuralNWUtils {
 
         return exponentialValues;
     }
+
+    public static float calculateLoss(float[] predictionArray, int[] actualLabel) {
+
+        // Ensure probability for the correct class is not zero (to prevent log(0) error)
+        float epsilon = 1e-10f; // Small value to avoid log(0)
+        float predictedValue = 0.0f;
+
+        for(int i = 0; i < actualLabel.length; i++) {
+            if(actualLabel[i] == 1) {
+                predictedValue = predictionArray[i];
+            }
+        }
+
+        // Log penalizes wrong predictions by a big margin
+        return - (float) Math.log(predictedValue + epsilon);
+    }
 }

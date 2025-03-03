@@ -33,14 +33,16 @@ public class NeuralNetwork {
         float[] hiddenLayerNeurons = new float[128];
 
         // For each train image
+        int counter = 0;
         for(float[] image : flattenedImages) {
             hiddenLayerNeurons = matrixMultiplication(image, weightsOne, biasOne); // Calculate hidden node values
 
             // This array[128] should now be used to predict a value from [0-9]
             float[] propagatedOutput = calculateOutput(hiddenLayerNeurons, weightsTwo, biasTwo);
 
-            // TODO : Calculate loss
-//            float loss = computeLoss(propagatedOutput, encodedLabels);
+            // Calculate loss
+            float loss = NeuralNWUtils.calculateLoss(propagatedOutput, encodedLabels.get(counter));
+            counter++;
         }
 
 
