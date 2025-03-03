@@ -4,7 +4,6 @@ import java.util.Random;
 
 public class NeuralNetwork {
 
-
     public NeuralNetwork(List<float[][]> trainImages, List<Integer> trainLabels) {
         /*
             Input Layer (784 neurons) → Each image is 28 × 28 = 784 pixels (flattened into a single vector).
@@ -18,7 +17,62 @@ public class NeuralNetwork {
         List<float[]> flattenedImages = flattenImages(trainImages);
         float[][] weightsOne = initializeWeightsOne();
         float[] biasOne = new float[128];
+        float[][] weightsTwo = initializeWeightsTwo();
+        float[] biasTwo = new float[10];
 
+    }
+
+    public float[] forwardPropagateLayerOne(List<float[]> flattenedImages,
+                                            List<int[]> encodedLabels,
+                                            float[][] weightsOne,
+                                            float[] biasOne,
+                                            float[][] weightsTwo,
+                                            float[] biasTwo) {
+        /* Formula to calculate value for each neuron in hidden layer
+        * Hj = {1 to 784}Summation(Input(i) x Weight(i, j) + Bias(j)) */
+        float[] hiddenLayerNeurons = new float[128];
+
+        // For each train image
+        for(float[] image : flattenedImages) {
+            hiddenLayerNeurons = matrixMultiplication(image, weightsOne, biasOne); // Calculate hidden node values
+
+            // This array[128] should now be used to predict a value from [0-9]
+            float[] propagatedOutput = calculateOutput(hiddenLayerNeurons, weightsTwo, biasTwo);
+
+            // TODO : Calculate loss
+//            float loss = computeLoss(propagatedOutput, encodedLabels);
+        }
+
+
+        return hiddenLayerNeurons;
+    }
+
+    public static float[] calculateOutput(float[] hiddenLayer, float[][] weightsTwo, float[] biasTwo) {
+        float[] preActivationLayer = new float[10];
+        for(int i = 0; i < 128; i++) {
+            float sum = 0.0f;
+            for(int j = 0; j < 10; j++) {
+                sum += hiddenLayer[j] * weightsTwo[j][i];
+            }
+            sum += biasTwo[i];
+            preActivationLayer[i] = sum;
+        }
+
+        return NeuralNWUtils.calculateSoftMax(preActivationLayer);
+    }
+
+    public static float[] matrixMultiplication(float[] image, float[][] weights, float[] bias) {
+        float[] result = new float[128];
+        for(int i = 0; i < 128; i++) {
+            float mul = 0.0f;
+            for(int j = 0; j < 784; j++) {
+                // Each pixel of single image x weight per neuron
+                mul = image[j] * weights[j][i];
+            }
+            result[i] = NeuralNWUtils.calculateReLu(mul + bias[i]);
+        }
+
+        return result;
     }
 
     public List<float[]> flattenImages(List<float[][]> trainImages) {
@@ -59,6 +113,20 @@ public class NeuralNetwork {
 
         return weightsOne;
 
+    }
+
+    public float[][] initializeWeightsTwo() {
+        float[][] weightsTwo = new float[128][10];
+        float stdDev = (float) Math.sqrt(1.0 / 128); // Xavier initialization for Sigmoid
+        Random random = new Random();
+
+        for(int i = 0; i < 128; i++) {
+            for(int j = 0; j < 10; j++) {
+                weightsTwo[i][j] = (float) (random.nextGaussian() * stdDev);
+            }
+        }
+
+        return weightsTwo;
     }
 
 }
