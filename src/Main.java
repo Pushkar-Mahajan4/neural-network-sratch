@@ -73,8 +73,9 @@ class Main {
         /* One hot encode training labels */
         List<int[]> encodedTrainLabels = Util.encodeLabels(extractedLabels);
 
-        /* TODO : Calculate loss */
-
+        /* Train the network */
+        System.out.println("Training neural network..");
+        NeuralNetwork trainedNetwork = new NeuralNetwork(normalizedPixels, encodedTrainLabels);
     }
 
     public static void displayImage(int[][] input) {
