@@ -52,4 +52,23 @@ public class NeuralNWUtils {
         // Log penalizes wrong predictions by a big margin
         return - (float) Math.log(predictedValue + epsilon);
     }
+
+
+    public static float[] convertToFloat(int[] array) {
+        float[] result = new float[array.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i];
+        }
+        return result;
+    }
+
+    public static int getMaxIndex(float[] array) {
+        int maxIndex = 0;
+        for (int i = 1; i < array.length; i++) {
+            if (array[i] > array[maxIndex]) {
+                maxIndex = i;
+            }
+        }
+        return maxIndex;
+    }
 }

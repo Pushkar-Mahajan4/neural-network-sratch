@@ -54,17 +54,17 @@ public class NeuralNetwork {
             int correct = 0;
             for (int i = 0; i < trainImages.size(); i++) {
                 float[] flattenedInput = flattenImage(trainImages.get(i));
-                float[] targetOutput = convertToFloat(trainLabels.get(i));
+                float[] targetOutput = NeuralNWUtils.convertToFloat(trainLabels.get(i));
 
                 // Forward pass
                 float[] hiddenLayer = forwardHidden(flattenedInput);
                 float[] outputLayer = forwardOutput(hiddenLayer);
 
                 // Backward pass
-                backpropagate(flattenedInput, hiddenLayer, outputLayer, targetOutput);
+                backPropagate(flattenedInput, hiddenLayer, outputLayer, targetOutput);
 
                 // Calculate accuracy
-                if (getMaxIndex(outputLayer) == getMaxIndex(targetOutput)) {
+                if (NeuralNWUtils.getMaxIndex(outputLayer) == NeuralNWUtils.getMaxIndex(targetOutput)) {
                     correct++;
                 }
             }
@@ -72,7 +72,7 @@ public class NeuralNetwork {
             float accuracy = (float) correct / trainImages.size() * 100;
             System.out.printf("Epoch %d: Training Accuracy = %.2f%%\n", epoch + 1, accuracy);
 
-            // Evaluate on test set
+            // Evaluate on test set on every 5th epoch
             if ((epoch + 1) % 5 == 0) {
                 evaluateTestSet(testImages, testLabels);
             }
@@ -114,7 +114,7 @@ public class NeuralNetwork {
         return softmax(output);
     }
 
-    private void backpropagate(float[] input, float[] hidden, float[] output, float[] target) {
+    private void backPropagate(float[] input, float[] hidden, float[] output, float[] target) {
         // Output layer error
         float[] outputError = new float[OUTPUT_NODES];
         for (int i = 0; i < OUTPUT_NODES; i++) {
@@ -186,23 +186,7 @@ public class NeuralNetwork {
         return output;
     }
 
-    private float[] convertToFloat(int[] array) {
-        float[] result = new float[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
-    }
 
-    private int getMaxIndex(float[] array) {
-        int maxIndex = 0;
-        for (int i = 1; i < array.length; i++) {
-            if (array[i] > array[maxIndex]) {
-                maxIndex = i;
-            }
-        }
-        return maxIndex;
-    }
 
     private void evaluateTestSet(List<float[][]> testImages, List<int[]> testLabels) {
         int correct = 0;
@@ -210,9 +194,9 @@ public class NeuralNetwork {
             float[] input = flattenImage(testImages.get(i));
             float[] hidden = forwardHidden(input);
             float[] output = forwardOutput(hidden);
-            float[] target = convertToFloat(testLabels.get(i));
+            float[] target = NeuralNWUtils.convertToFloat(testLabels.get(i));
 
-            if (getMaxIndex(output) == getMaxIndex(target)) {
+            if (NeuralNWUtils.getMaxIndex(output) == NeuralNWUtils.getMaxIndex(target)) {
                 correct++;
             }
         }
