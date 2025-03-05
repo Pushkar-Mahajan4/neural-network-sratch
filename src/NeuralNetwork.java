@@ -3,9 +3,7 @@ import java.util.List;
 import java.util.Random;
 
 public class NeuralNetwork {
-
-    public NeuralNetwork(List<float[][]> trainImages, List<int[]> encodedLabels) {
-        /*
+    /*
             Input Layer (784 neurons) → Each image is 28 × 28 = 784 pixels (flattened into a single vector).
             Hidden Layer (128 neurons) → A fully connected layer with 128 neurons.
             Output Layer (10 neurons) → Predicts a digit (0-9) using softmax activation.
@@ -14,186 +12,195 @@ public class NeuralNetwork {
             Every time data moves from one layer to the next,
             it passes through weights and biases before reaching the activation function. The flow looks like this:
         */
-        List<float[]> flattenedImages = flattenImages(trainImages);
-        float[][] weightsOne = initializeWeightsOne();
-        float[] biasOne = new float[128];
-        float[][] weightsTwo = initializeWeightsTwo();
-        float[] biasTwo = new float[10];
 
-        System.out.println("Initiating Network training");
-        trainNetwork(flattenedImages, encodedLabels, weightsOne, biasOne, weightsTwo, biasTwo);
+    private float[][] weightsInputHidden;
+    private float[][] weightsHiddenOutput;
+    private float[] biasHidden;
+    private float[] biasOutput;
+    private static final int HIDDEN_NODES = 128;
+    private static final int OUTPUT_NODES = 10;
+    private static final float LEARNING_RATE = 0.01f;
+    private static final int EPOCHS = 10;
 
+    public NeuralNetwork(List<float[][]> trainImages, List<int[]> trainLabels,
+            List<float[][]> testImages, List<int[]> testLabels) {
+        int inputNodes = 784; // 28x28 pixels
 
-    }
+        // Initialize weights with Xavier/Glorot initialization
+        Random random = new Random();
+        double weightScale = Math.sqrt(2.0 / (inputNodes + HIDDEN_NODES));
 
-    public void trainNetwork(List<float[]> flattenedImages,
-                                         List<int[]> encodedLabels,
-                                         float[][] weightsOne,
-                                         float[] biasOne,
-                                         float[][] weightsTwo,
-                                         float[] biasTwo) {
-        /* Formula to calculate value for each neuron in hidden layer
-        * Hj = {1 to 784}Summation(Input(i) x Weight(i, j) + Bias(j)) */
-        float[] hiddenLayerNeurons = new float[128];
+        weightsInputHidden = new float[inputNodes][HIDDEN_NODES];
+        weightsHiddenOutput = new float[HIDDEN_NODES][OUTPUT_NODES];
+        biasHidden = new float[HIDDEN_NODES];
+        biasOutput = new float[OUTPUT_NODES];
 
-        // For each train image
-        int counter = 0;
-        for(float[] image : flattenedImages) {
-            System.out.println("Counter : " + counter);
-            hiddenLayerNeurons = matrixMultiplication(image, weightsOne, biasOne); // Calculate hidden node values
-
-            // This array[128] should now be used to predict a value from [0-9]
-            float[] propagatedOutput = calculateOutput(hiddenLayerNeurons, weightsTwo, biasTwo);
-
-            // Calculate loss
-            float loss = NeuralNWUtils.calculateLoss(propagatedOutput, encodedLabels.get(counter));
-
-            // Backpropagation for weight adjustment
-            backPropagation(
-                    image,
-                    hiddenLayerNeurons,
-                    propagatedOutput,
-                    encodedLabels.get(counter),
-                    weightsOne,
-                    biasOne,
-                    weightsTwo,
-                    biasTwo);
-
-            counter++;
-        }
-
-    }
-
-    public static void backPropagation(float[] input,               // Flattened image (1x784)
-                                       float[] hiddenOutput,        // Output of hidden layer (1x128)
-                                       float[] finalOutput,         // Softmax output (1x10)
-                                       int[] actualLabel,         // One-hot encoded label (1x10)
-                                       float[][] weightsOne,        // Weights (784x128)
-                                       float[] biasesOne,           // Biases (128)
-                                       float[][] weightsTwo,        // Weights (128x10)
-                                       float[] biasesTwo) {           // Biases (10)
-        // Step 1: Compute Output Layer Error (delta_output)
-        System.out.println("Calculating Delta");
-        float[] deltaOutput = new float[10];
-        for (int k = 0; k < 10; k++) {
-            deltaOutput[k] = finalOutput[k] - actualLabel[k]; // Softmax Derivative
-        }
-
-        // Step 2: Compute Hidden Layer Error (delta_hidden)
-        float[] deltaHidden = new float[128];
-        for (int j = 0; j < 128; j++) {
-            float errorSum = 0;
-            for (int k = 0; k < 10; k++) {
-                errorSum += weightsTwo[j][k] * deltaOutput[k];
-            }
-            // ReLU derivative: 1 if hiddenOutput[j] > 0, else 0
-            deltaHidden[j] = (hiddenOutput[j] > 0) ? errorSum : 0;
-        }
-
-        // Step 3: Update Weights & Biases (Output Layer)
-        System.out.println("Adjusting weights and biases");
-        float learningRate = 0.01f;
-        for (int j = 0; j < 128; j++) {
-            for (int k = 0; k < 10; k++) {
-                weightsTwo[j][k] -= learningRate * hiddenOutput[j] * deltaOutput[k]; // Gradient Descent
+        // Initialize weights and biases
+        for (int i = 0; i < inputNodes; i++) {
+            for (int j = 0; j < HIDDEN_NODES; j++) {
+                weightsInputHidden[i][j] = (float) (random.nextGaussian() * weightScale);
             }
         }
-        for (int k = 0; k < 10; k++) {
-            biasesTwo[k] -= learningRate * deltaOutput[k]; // Update biases for output layer
-        }
 
-        // Step 4: Update Weights & Biases (Hidden Layer)
-        for (int i = 0; i < 784; i++) {
-            for (int j = 0; j < 128; j++) {
-                weightsOne[i][j] -= learningRate * input[i] * deltaHidden[j]; // Gradient Descent
+        weightScale = Math.sqrt(2.0 / (HIDDEN_NODES + OUTPUT_NODES));
+        for (int i = 0; i < HIDDEN_NODES; i++) {
+            for (int j = 0; j < OUTPUT_NODES; j++) {
+                weightsHiddenOutput[i][j] = (float) (random.nextGaussian() * weightScale);
             }
         }
-        for (int j = 0; j < 128; j++) {
-            biasesOne[j] -= learningRate * deltaHidden[j]; // Update biases for hidden layer
-        }
-    }
 
-    public static float[] calculateOutput(float[] hiddenLayer, float[][] weightsTwo, float[] biasTwo) {
-        float[] preActivationLayer = new float[10];
-        for(int i = 0; i < 10; i++) {
-            float sum = 0.0f;
-            for(int j = 0; j < 128; j++) {
-                sum += hiddenLayer[j] * weightsTwo[j][i];
-            }
-            sum += biasTwo[i];
-            preActivationLayer[i] = sum;
-        }
+        // Training loop
+        for (int epoch = 0; epoch < EPOCHS; epoch++) {
+            int correct = 0;
+            for (int i = 0; i < trainImages.size(); i++) {
+                float[] flattenedInput = flattenImage(trainImages.get(i));
+                float[] targetOutput = NeuralNWUtils.convertToFloat(trainLabels.get(i));
 
-        return NeuralNWUtils.calculateSoftMax(preActivationLayer);
-    }
+                // Forward pass
+                float[] hiddenLayer = forwardHidden(flattenedInput);
+                float[] outputLayer = forwardOutput(hiddenLayer);
 
-    public static float[] matrixMultiplication(float[] image, float[][] weights, float[] bias) {
-        float[] result = new float[128];
-        for(int i = 0; i < 128; i++) {
-            float mul = 0.0f;
-            for(int j = 0; j < 784; j++) {
-                // Each pixel of single image x weight per neuron
-                mul = image[j] * weights[j][i];
-            }
-            result[i] = NeuralNWUtils.calculateReLu(mul + bias[i]);
-        }
+                // Backward pass
+                backPropagate(flattenedInput, hiddenLayer, outputLayer, targetOutput);
 
-        return result;
-    }
-
-    public List<float[]> flattenImages(List<float[][]> trainImages) {
-
-        /*
-          Think of a dense layer as a spreadsheet where each pixel is a separate column.
-          A 1D vector (flattened) is like having 784 columns, each storing one pixel value.
-          A 2D matrix (28 × 28) is like a table with rows and columns, which dense layers can't process directly.
-          A CNN can handle spatial data aka (2D - Matrix). But is overkill for MNIST.
-        */
-        List<float[]> resultImages = new ArrayList<>();
-
-        for(float[][] image : trainImages) {
-            float[] flatImage = new float[image.length * image[0].length];
-            System.out.println("single image size : " + flatImage.length);
-            int counter = 0;
-            for(int i = 0; i < image.length; i++) {
-                for(int j = 0; j < image[0].length; j ++) {
-                    flatImage[counter] = image[i][j];
+                // Calculate accuracy
+                if (NeuralNWUtils.getMaxIndex(outputLayer) == NeuralNWUtils.getMaxIndex(targetOutput)) {
+                    correct++;
                 }
             }
-            resultImages.add(flatImage);
-        }
 
-        return resultImages;
+            float accuracy = (float) correct / trainImages.size() * 100;
+            System.out.printf("Epoch %d: Training Accuracy = %.2f%%\n", epoch + 1, accuracy);
+
+            // Evaluate on test set on every 5th epoch
+            if ((epoch + 1) % 5 == 0) {
+                evaluateTestSet(testImages, testLabels);
+            }
+        }
     }
 
-    public float[][] initializeWeightsOne() {
-        /* Weights Dimensions : Size of previous layer x current layer
-        *  Since these weights sit between input layer(784 pixels) and hidden layer(128) */
-        float[][] weightsOne = new float[784][128];
-        float stdDev = (float) Math.sqrt(2.0 / 784); // He  initialization suitable for ReLu
-        Random random = new Random();
-        for(int i = 0; i < 784; i++) {
-            for(int j = 0; j < 128; j++) {
-                weightsOne[i][j] = (float) (random.nextGaussian() * stdDev);
+    private float[] flattenImage(float[][] image) {
+        float[] flattened = new float[784];
+        int index = 0;
+        for (int i = 0; i < 28; i++) {
+            for (int j = 0; j < 28; j++) {
+                flattened[index++] = image[i][j];
+            }
+        }
+        return flattened;
+    }
+
+    private float[] forwardHidden(float[] input) {
+        float[] hidden = new float[HIDDEN_NODES];
+        for (int i = 0; i < HIDDEN_NODES; i++) {
+            float sum = biasHidden[i];
+            for (int j = 0; j < input.length; j++) {
+                sum += input[j] * weightsInputHidden[j][i];
+            }
+            hidden[i] = relu(sum);
+        }
+        return hidden;
+    }
+
+    private float[] forwardOutput(float[] hidden) {
+        float[] output = new float[OUTPUT_NODES];
+        for (int i = 0; i < OUTPUT_NODES; i++) {
+            float sum = biasOutput[i];
+            for (int j = 0; j < HIDDEN_NODES; j++) {
+                sum += hidden[j] * weightsHiddenOutput[j][i];
+            }
+            output[i] = sum;
+        }
+        return softmax(output);
+    }
+
+    private void backPropagate(float[] input, float[] hidden, float[] output, float[] target) {
+        // Output layer error
+        float[] outputError = new float[OUTPUT_NODES];
+        for (int i = 0; i < OUTPUT_NODES; i++) {
+            outputError[i] = output[i] - target[i];
+        }
+
+        // Hidden layer error
+        float[] hiddenError = new float[HIDDEN_NODES];
+        for (int i = 0; i < HIDDEN_NODES; i++) {
+            float error = 0;
+            for (int j = 0; j < OUTPUT_NODES; j++) {
+                error += outputError[j] * weightsHiddenOutput[i][j];
+            }
+            hiddenError[i] = error * reluDerivative(hidden[i]);
+        }
+
+        // Update weights and biases
+        updateWeights(input, hidden, outputError, hiddenError);
+    }
+
+    private void updateWeights(float[] input, float[] hidden, float[] outputError, float[] hiddenError) {
+        // Update hidden-output weights
+        for (int i = 0; i < HIDDEN_NODES; i++) {
+            for (int j = 0; j < OUTPUT_NODES; j++) {
+                weightsHiddenOutput[i][j] -= LEARNING_RATE * hidden[i] * outputError[j];
             }
         }
 
-        return weightsOne;
-
-    }
-
-    public float[][] initializeWeightsTwo() {
-        float[][] weightsTwo = new float[128][10];
-        float stdDev = (float) Math.sqrt(1.0 / 128); // Xavier initialization for Sigmoid
-        Random random = new Random();
-
-        for(int i = 0; i < 128; i++) {
-            for(int j = 0; j < 10; j++) {
-                weightsTwo[i][j] = (float) (random.nextGaussian() * stdDev);
+        // Update input-hidden weights
+        for (int i = 0; i < input.length; i++) {
+            for (int j = 0; j < HIDDEN_NODES; j++) {
+                weightsInputHidden[i][j] -= LEARNING_RATE * input[i] * hiddenError[j];
             }
         }
 
-        return weightsTwo;
+        // Update biases
+        for (int i = 0; i < OUTPUT_NODES; i++) {
+            biasOutput[i] -= LEARNING_RATE * outputError[i];
+        }
+        for (int i = 0; i < HIDDEN_NODES; i++) {
+            biasHidden[i] -= LEARNING_RATE * hiddenError[i];
+        }
     }
 
+    private float relu(float x) {
+        return Math.max(0, x);
+    }
+
+    private float reluDerivative(float x) {
+        return x > 0 ? 1 : 0;
+    }
+
+    private float[] softmax(float[] input) {
+        float[] output = new float[input.length];
+        float max = Float.NEGATIVE_INFINITY;
+        for (float value : input) {
+            max = Math.max(max, value);
+        }
+
+        float sum = 0;
+        for (int i = 0; i < input.length; i++) {
+            output[i] = (float) Math.exp(input[i] - max);
+            sum += output[i];
+        }
+
+        for (int i = 0; i < output.length; i++) {
+            output[i] /= sum;
+        }
+        return output;
+    }
+
+
+
+    private void evaluateTestSet(List<float[][]> testImages, List<int[]> testLabels) {
+        int correct = 0;
+        for (int i = 0; i < testImages.size(); i++) {
+            float[] input = flattenImage(testImages.get(i));
+            float[] hidden = forwardHidden(input);
+            float[] output = forwardOutput(hidden);
+            float[] target = NeuralNWUtils.convertToFloat(testLabels.get(i));
+
+            if (NeuralNWUtils.getMaxIndex(output) == NeuralNWUtils.getMaxIndex(target)) {
+                correct++;
+            }
+        }
+        float accuracy = (float) correct / testImages.size() * 100;
+        System.out.printf("Test Accuracy: %.2f%%\n", accuracy);
+    }
 }
